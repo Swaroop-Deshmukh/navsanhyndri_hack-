@@ -123,4 +123,4 @@ Frontend runs at: `http://localhost:5173`
 
 ## 🏆 Built for
 
-**Smart City Hackathon 2025** | Powered by Gemini AI
+**Quatam Arena Hackathon 2026** | Powered by CENTRAL GOVERNMENT
