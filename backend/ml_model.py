@@ -7,92 +7,92 @@ class AQIPredictor:
     def __init__(self):
         self.model = LinearRegression()
         self.is_trained = False
+        self.city_models = {}
         
-    def train(self):
-        # Trains on 72 hours of synthetic historical AQI with daily sine wave pattern
-        hours = 72
+    def train(self, city_name, base_aqi=100):
+        # In a real scenario, we'd fetch 1-2 years of archive data from Open-Meteo here.
+        # To avoid rate limits in a live demo, we'll synthesise a realistic 1-year historical dataset 
+        # anchored around the city's current real base_aqi, embedding seasonal winter/summer patterns.
+        
+        days_history = 365
         now = datetime.datetime.now()
         
         X = []
         y = []
         
-        for i in range(hours):
-            dt = now - datetime.timedelta(hours=hours-i)
-            hour = dt.hour
+        for i in range(days_history):
+            dt = now - datetime.timedelta(days=days_history-i)
+            day_of_year = dt.timetuple().tm_yday
             
-            # Feature extraction for time
-            sin_hour = np.sin((hour / 24) * 2 * np.pi)
-            cos_hour = np.cos((hour / 24) * 2 * np.pi)
-            traffic = 1 if (8 <= hour <= 10 or 17 <= hour <= 20) else 0
+            # Feature extraction for seasonality
+            sin_day = np.sin((day_of_year / 365.25) * 2 * np.pi)
+            cos_day = np.cos((day_of_year / 365.25) * 2 * np.pi)
             
-            base_aqi = 85
-            # Synthetic ground truth
-            actual_aqi = base_aqi + sin_hour * 20 + traffic * 25 + np.random.normal(0, 5)
+            # Winter typically has higher pollution in India (days 1-60 and 300-365)
+            winter_penalty = 1.0 if (day_of_year < 60 or day_of_year > 300) else 0.0
             
-            X.append([sin_hour, cos_hour, traffic])
+            # Synthetic ground truth based on real anchor
+            actual_aqi = base_aqi + (winter_penalty * 40) + np.random.normal(0, 10)
+            
+            X.append([sin_day, cos_day, winter_penalty])
             y.append(actual_aqi)
             
-        self.model.fit(X, y)
+        model = LinearRegression()
+        model.fit(X, y)
+        self.city_models[city_name] = model
         self.is_trained = True
         
-    def predict(self, hours_ahead):
-        if not self.is_trained:
-            self.train()
+    def predict(self, city_name, days_ahead, base_aqi=100):
+        if city_name not in self.city_models:
+            self.train(city_name, base_aqi)
             
+        model = self.city_models[city_name]
         now = datetime.datetime.now()
         predictions = []
         
-        for i in range(1, hours_ahead + 1):
-            dt = now + datetime.timedelta(hours=i)
-            hour = dt.hour
+        for i in range(1, days_ahead + 1):
+            dt = now + datetime.timedelta(days=i)
+            day_of_year = dt.timetuple().tm_yday
             
-            sin_hour = np.sin((hour / 24) * 2 * np.pi)
-            cos_hour = np.cos((hour / 24) * 2 * np.pi)
-            traffic = 1 if (8 <= hour <= 10 or 17 <= hour <= 20) else 0
+            sin_day = np.sin((day_of_year / 365.25) * 2 * np.pi)
+            cos_day = np.cos((day_of_year / 365.25) * 2 * np.pi)
+            winter_penalty = 1.0 if (day_of_year < 60 or day_of_year > 300) else 0.0
             
-            pred_aqi = self.model.predict([[sin_hour, cos_hour, traffic]])[0]
+            pred_aqi = model.predict([[sin_day, cos_day, winter_penalty]])[0]
             pred_aqi = max(0, int(pred_aqi))
             
             predictions.append({
-                "timestamp": dt.isoformat(),
+                "date": dt.strftime("%Y-%m-%d"),
                 "predicted_aqi": pred_aqi,
-                "confidence_high": pred_aqi + 15,
-                "confidence_low": max(0, pred_aqi - 15)
+                "confidence_high": pred_aqi + 20,
+                "confidence_low": max(0, pred_aqi - 20)
             })
             
         return predictions
 
-def get_explanation(aqi):
-    # Returns 2-3 plain-English reasons for AQI level
-    if aqi < 50:
-        return [
-            "Air quality is satisfactory and air pollution poses little or no risk.",
-            "Great time to enjoy outdoor activities.",
-            "Weather patterns and low traffic are keeping the air clear."
-        ]
-    elif aqi < 100:
-        return [
-            "Air quality is acceptable, but there may be a moderate health concern for some people.",
-            "Consider reducing prolonged or heavy outdoor exertion.",
-            "Normal urban emissions are present in the air."
-        ]
-    elif aqi < 150:
-        return [
-            "Members of sensitive groups may experience mild health effects.",
-            "Traffic congestion and stable weather patterns are trapping pollutants.",
-            "The general public should not experience significant effects yet."
-        ]
-    elif aqi < 200:
-        return [
-            "Everyone may begin to experience health effects.",
-            "High concentration of localized and transient emissions.",
-            "Avoid prolonged outdoor exertion, opt for indoor exercises."
-        ]
+def get_explanation(aqi, date_str):
+    # Returns 2-3 plain-English reasons for AQI level based on predicted season
+    dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+    month = dt.month
+    
+    reasons = []
+    
+    if month in [11, 12, 1, 2]:
+        reasons.append("Winter inversion layers are likely to trap pollutants close to the ground.")
+        if aqi > 150: reasons.append("Expected biomass burning and heating emissions heavily contribute to this spike.")
+    elif month in [6, 7, 8, 9]:
+        reasons.append("Monsoon rains generally wash out particulate matter, improving overall AQI.")
     else:
-        return [
-            "Health alert: everyone may experience more serious health effects.",
-            "Severe accumulation of pollutants likely due to industrial activity or fires.",
-            "Stay indoors with filtered air if possible and avoid any outdoor exertion."
-        ]
+        reasons.append("Transitional weather patterns result in moderate dispersion of urban emissions.")
+        
+    if aqi < 50:
+        reasons.append("Air quality is forecasted to be satisfactory for all outdoor activities.")
+    elif aqi < 150:
+        reasons.append("Ambient urban traffic and industrial baselines drive this moderate warning.")
+    else:
+        reasons.append("Hazardous spikes predicted. Suggest implementing preemptive emergency controls.")
+        
+    return reasons
 
 predictor = AQIPredictor()
+
