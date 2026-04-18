@@ -1,12 +1,12 @@
-# 🧪 AQI Pulse — Prototype Walkthrough
+# 🧪 Geo Breath — Prototype Walkthrough
 
-> A comprehensive guide to every feature in the **AQI Pulse** hackathon prototype — what it does, how it works, and how to demo it live.
+> A comprehensive guide to every feature in the **Geo Breath** hackathon prototype — what it does, how it works, and how to demo it live.
 
 ---
 
 ## Overview
 
-**AQI Pulse** is a full-stack, real-time air quality intelligence platform for Indian cities. It was designed to answer a single question:
+**Geo Breath** is a full-stack, real-time air quality intelligence platform for Indian cities. It was designed to answer a single question:
 
 > *"Given what's happening in the air right now, what should city administrators do next?"*
 

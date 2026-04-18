@@ -1,5 +1,5 @@
 // ============================================================
-// Firebase Configuration — AQI Pulse  
+// Firebase Configuration — Geo Breath  
 // ============================================================
 // SETUP INSTRUCTIONS (do this when prompted):
 //  1. Go to https://console.firebase.google.com

@@ -111,7 +111,7 @@
 
   /* Insert a custom title for the printed report */
   #main-content-area::before {
-    content: "Telemetric Analysis Report - AQI Pulse Systems";
+    content: "Telemetric Analysis Report - Geo Breath Systems";
     display: block;
     font-size: 24pt;
     font-weight: 900;

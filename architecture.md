@@ -1,6 +1,6 @@
-# 🏗️ AQI Pulse — System Architecture
+# 🏗️ Geo Breath — System Architecture
 
-> This document describes the full-stack architecture, data flow, and component design of the AQI Pulse platform.
+> This document describes the full-stack architecture, data flow, and component design of the Geo Breath platform.
 
 ---
 

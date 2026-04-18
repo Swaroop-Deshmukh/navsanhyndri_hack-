@@ -1,4 +1,4 @@
-# 🌍 AQI Pulse — Smart City Air Quality Dashboard
+# 🌍 Geo Breath — Smart City Air Quality Dashboard
 
 > A **real-time, AI-powered Urban Air Quality Monitoring system** built for the **NavSanHyndri Smart City Hackathon 2025**.
 > Monitor, predict, simulate, personalise, and plan — all in one premium dashboard across 5 Indian cities.
