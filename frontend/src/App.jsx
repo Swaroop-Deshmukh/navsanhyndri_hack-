@@ -10,6 +10,7 @@ import PredictionsPage from "./pages/PredictionsPage";
 import EmergencyPage from "./pages/EmergencyPage";
 import SuggestionsPage from "./pages/SuggestionsPage";
 import PersonalisePage from "./pages/PersonalisePage";
+import PlanningPage from "./pages/PlanningPage";
 
 export default function App() {
   const [currentData, setCurrentData] = useState([]);
@@ -95,6 +96,7 @@ export default function App() {
            <Route path="emergency" element={<EmergencyPage />} />
            <Route path="suggestions" element={<SuggestionsPage />} />
            <Route path="personalise" element={<PersonalisePage />} />
+           <Route path="planning" element={<PlanningPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -818,24 +818,30 @@ export default function PersonalisePage() {
         </div>
       </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-2 flex-wrap bg-[#1e293b] p-2 rounded-2xl border border-white/5">
-        {tabs.map(t => (
-          <TabBtn
-            key={t.id}
-            active={activeTab === t.id}
-            onClick={() => setActiveTab(t.id)}
-            icon={t.icon}
-            label={t.label}
-          />
-        ))}
-      </div>
+      {!hook.user || !hook.profile ? (
+        <ProfileTab hook={hook} />
+      ) : (
+        <>
+          {/* Tab bar */}
+          <div className="flex gap-2 flex-wrap bg-[#1e293b] p-2 rounded-2xl border border-white/5">
+            {tabs.map(t => (
+              <TabBtn
+                key={t.id}
+                active={activeTab === t.id}
+                onClick={() => setActiveTab(t.id)}
+                icon={t.icon}
+                label={t.label}
+              />
+            ))}
+          </div>
 
-      {/* Tab content */}
-      {activeTab === 'journey'     && <JourneyTab     hook={hook} profile={hook.profile} />}
-      {activeTab === 'summary'     && <SummaryTab     weeklyData={hook.weeklyData} />}
-      {activeTab === 'leaderboard' && <LeaderboardTab leaderboard={hook.leaderboard} />}
-      {activeTab === 'profile'     && <ProfileTab     hook={hook} />}
+          {/* Tab content */}
+          {activeTab === 'journey'     && <JourneyTab     hook={hook} profile={hook.profile} />}
+          {activeTab === 'summary'     && <SummaryTab     weeklyData={hook.weeklyData} />}
+          {activeTab === 'leaderboard' && <LeaderboardTab leaderboard={hook.leaderboard} />}
+          {activeTab === 'profile'     && <ProfileTab     hook={hook} />}
+        </>
+      )}
     </div>
   );
 }

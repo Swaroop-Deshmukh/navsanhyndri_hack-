@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Map, TrendingUp, AlertTriangle, Settings, User, Download, Lightbulb, UserCog } from 'lucide-react';
+import { LayoutDashboard, Map, TrendingUp, AlertTriangle, Settings, User, Download, Lightbulb, UserCog, Building2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import ReportGenerator from '../components/ReportGenerator';
@@ -16,6 +16,7 @@ export default function MainLayout({ contextData }) {
     { name: 'Emergency', path: '/emergency', icon: AlertTriangle },
     { name: 'Simulation Plan', path: '/suggestions', icon: Lightbulb },
     { name: 'Personalise', path: '/personalise', icon: UserCog },
+    { name: 'Govt. City planning', path: '/planning', icon: Building2 },
   ];
 
   const getPageTitle = () => {
@@ -26,6 +27,7 @@ export default function MainLayout({ contextData }) {
       case '/emergency': return 'Emergency Protocol';
       case '/suggestions': return 'Master Action Plan';
       case '/personalise': return 'My Air Story';
+      case '/planning': return 'Govt. City Planning module';
       default: return 'Control Center';
     }
   };
