@@ -12,11 +12,12 @@
 
 The prototype covers the full decision-making loop:
 1. **Monitor** → Live AQI readings per city zone
-2. **Analyze** → Historical trends + pollutant source breakdown
-3. **Predict** → 1d-365d ML-based AQI forecast + Exact Date Picker
-4. **Respond** → Automated Hazard Detection + AI-generated Action Plans
-5. **Simulate** → Govt. Urban Planning sandbox for city administrators
-6. **Report** → One-click PDF executive report export
+2. **Profile** → Personalised health alerts and exposure tracking
+3. **Analyze** → Historical trends + pollutant source breakdown
+4. **Predict** → 1d-365d ML-based AQI forecast + Exact Date Picker
+5. **Respond** → Automated Hazard Detection + Action Plans + Events
+6. **Simulate** → Govt. Urban scale sandbox for infrastructure mapping
+7. **Report** → One-click PDF executive report export
 
 ---
 
@@ -117,16 +118,18 @@ The prototype covers the full decision-making loop:
 
 ---
 
-### 6. My Air Story (`/personalise`)
+### 6. Personalise Page (`/personalise`)
 
-**Individual Impact** — making air quality personal.
+**Citizen-centric exposure tracking** — making air quality personal.
 
 | Element | What it shows |
 |---------|--------------|
 | **Cigarette Counter** | Real-time calculation of inhaled pollutants equivalent to cigarettes |
-| **Air Story Log** | Chronological record of zones visited and exposure levels |
-| **Clean Air Leaderboard**| Gamified community ranking for users with the lowest weekly exposure |
-| **Health Profile** | Google-authenticated portal to track personal respiratory trends |
+| **My Journey Log** | Synthetic GPS route tracker showing visited zones and chronological exposure |
+| **Weekly Leaderboard**| Gamified community ranking for users with the lowest weekly exposure |
+| **Health Profile** | Google-authenticated portal to save health conditions (Asthma/COPD) for tailored alerts |
+
+**Demo tip:** Start the journey tracker. The synthetic commuter traverses the city and the localized AQI/exposure metrics tick up. Show the health profile tab to demonstrate condition-specific thresholds.
 
 ---
 
@@ -134,9 +137,14 @@ The prototype covers the full decision-making loop:
 
 **Strategic Foresight** — auth-gated urban development simulation.
 
-- **Green Zones:** Place virtual parks on the map and watch neighborhing zone AQI drop in real-time.
-- **Industrial Growth:** Model the impact of new factories on regional air quality.
-- **Commuter Exposure:** Track synthetic traffic patterns to optimize clean-air corridors.
+| Element | What it shows |
+|---------|--------------|
+| **Govt Login** | Simple mock secure portal to restrict access to city administrators (GovtLoginPage). |
+| **Interactive Map** | Click anywhere to drop a *Green Cover* (tree) or *Industrial Zone* (factory). |
+| **Exposure Tracker** | A synthetic commuter's exposure is calculated based on proximity to placed mitigating/emitting structures. |
+| **Regional Impact** | Dashboard dynamically computes an aggregated city AQI base depending on custom placements. |
+
+**Demo tip:** Drop a factory near the commuter's predefined path to instantly spike their localized AQI. Drop green cover nearby to mitigate the impact. Demonstrates actionable urban planning data mapping.
 
 ---
 

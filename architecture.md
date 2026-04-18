@@ -11,10 +11,10 @@
 │                         CLIENT (Browser)                             │
 │                                                                      │
 │  React 19 SPA (Vite 8) — Deployed on Vercel                         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────┐ │
-│  │Dashboard │  │ Heatmap  │  │Govt Plot │  │Emergency │  │Predic-│ │
-│  │  Page    │  │  Page    │  │  Page    │  │  Page    │  │ tions │ │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬───┘ │
+│  ┌──────────┐ ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌─────────────┐ │
+│  │Dashboard,│ │Planning,│ │ Emergency,│ │Forecast,││ Personalise │ │
+│  │   Map    │ │   Govt  │ │ Suggestions│ │  Predict││   Profile   │ │
+│  └────┬─────┘ └────┬────┘ └─────┬───┘ └─────┬────┘ └──────┬──────┘ │
 │       │              │             │              │             │     │
 │       └──────────────┴─────────────┴──────────────┴─────────────┘   │
 │                                   │                                  │
@@ -58,19 +58,21 @@
 ### 2.1 Routing & Layout
 
 The application uses **React Router v7** nested routes. All pages share a `MainLayout` shell that provides:
-- **Persistent Sidebar**: Navigation for Dashboard, Heatmap, Planning, Emergency, and Predictions.
+- **Persistent Sidebar**: Navigation for Dashboard, Map, Predictions, Emergency, Suggestions, Personalise, and Planning.
 - **Dynamic Selectors**: City and Zone dropdowns that trigger global state updates.
 - **Global Context**: Shared `contextData` including live sensor feeds and active alerts.
+- **PDF Export Trigger**: Opens `ReportGenerator` from the header.
 
 ```
 BrowserRouter
-└── MainLayout (Sidebar + Global Context)
+└── MainLayout (Sidebar + Global Context + Selectors)
     ├── / → DashboardPage (Overview & Real-time Metrics)
     ├── /map → MapPage (Interpolated Heatmap)
-    ├── /planning → PlanningPage (Govt. Sandbox + Exposure Tracker)
-    ├── /emergency → EmergencyPage (Crisis Ops + Automated Response)
     ├── /predictions → PredictionsPage (Date-Based Forecasting)
-    ├── /personalise → PersonalisePage (Journey Analytics)
+    ├── /emergency → EmergencyPage (Crisis Ops + Automated Response)
+    ├── /suggestions → SuggestionsPage (AI Policy Directives)
+    ├── /personalise → PersonalisePage (Journey Analytics & Exposure Track)
+    ├── /planning → PlanningPage (Govt. Sandbox, authenticated)
     └── /login → GovtLoginPage (Secure Admin Gate)
 ```
 
@@ -91,12 +93,21 @@ App.jsx (Global Provider)
 
 | Component | Description |
 |-----------|-------------|
-| `PlanningCanvas` | A Leaflet-powered sandbox allowing officials to place tree/industrial units and simulate regional AQI impact. |
-| `ExposureTracker` | In-page physics engine calculating a commuter's cumulative AQI exposure, translated to "Cigarette Equivalency." |
+| `AQICards` | KPI metric cards displaying AQI, PM2.5, PM10, NO₂, CO per zone |
+| `AlertBanner` | Dynamic severity banner triggered when max AQI exceeds thresholds |
+| `AQIMap` | Leaflet heatmap + clickable zone markers with AQI popups |
+| `PollutantChart` | 24-hour multi-pollutant Recharts line chart (historical data) |
+| `PredictionGraph` | ML forecast area chart with shaded confidence band |
+| `ExplainabilityCard` | Season-aware, plain-English bullet explanations for forecast |
+| `FactorsBarChart` | Bar chart breakdown of pollutant sources (vehicle/factory/dust/other) |
+| `WhatIfSimulator` | Client-side AQI slider to model intervention impact scenarios |
+| `PlanningCanvas` | Leaflet-powered sandbox allowing officials to place tree/industrial units and simulate regional AQI impact. |
+| `ExposureTracker` | In-page physics engine calculating a commuter's cumulative AQI exposure. |
 | `EmergencySimulator` | Crisis control center with manual overrides (Wildfire, Leak) and automated spike detection logic. |
-| `AutomatedDetector` | Background monitor that triggers high-priority alerts when live sensor telemetry exceeds 150 AQI. |
-| `ForceSpike` | A hackathon-exclusive utility to inject hazardous telemetry for demonstrating automated response protocols. |
+| `AutomatedDetector` | Background monitor that triggers alerts when sensor telemetry exceeds safe levels. |
+| `ForceSpike` | Hackathon-exclusive utility to inject hazardous telemetry for demonstration. |
 | `ReportGenerator` | High-fidelity PDF engine using off-screen rendering to bypass canvas styling limitations. |
+| `GovtLoginPage` | Simple mock auth portal for the Planning sandbox. |
 
 ---
 
