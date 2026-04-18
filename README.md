@@ -179,4 +179,4 @@ npm run dev
 
 ## 🏆 Built for
 
-**Smart City Hackathon 2025** | Powered by Gemini AI
+**navsanhyandri_hack** | Powered by goblet of fire
