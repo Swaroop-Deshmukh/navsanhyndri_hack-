@@ -174,4 +174,4 @@ npm run dev
 
 ## 🏆 Built for
 
-**Smart City Hackathon 2025** | Powered by Gemini AI
+**Quatum Arena 1.0 Hackathon** | Powered by Central Government
