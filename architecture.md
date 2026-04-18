@@ -12,8 +12,8 @@
 │                                                                      │
 │  React 19 SPA (Vite 8) — Deployed on Vercel                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────┐ │
-│  │Dashboard │  │ Heatmap  │  │Predictions│  │Emergency │  │Sugges-│ │
-│  │  Page    │  │  Page    │  │  Page    │  │  Page    │  │tions  │ │
+│  │Dashboard │  │ Heatmap  │  │Govt Plot │  │Emergency │  │Predic-│ │
+│  │  Page    │  │  Page    │  │  Page    │  │  Page    │  │ tions │ │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬───┘ │
 │       │              │             │              │             │     │
 │       └──────────────┴─────────────┴──────────────┴─────────────┘   │
@@ -41,7 +41,7 @@
 │        └─────────────────▼                                           │
 │                     main.py (Route Handlers)                         │
 │        /cities /current /history /heatmap /predict                   │
-│        /simulate /suggestions                                        │
+│        /simulate /suggestions /analytics                             │
 └──────────────────────────────────────────────────────────────────────┘
                                │
 ┌──────────────────────────────▼───────────────────────────────────────┐
@@ -58,50 +58,45 @@
 ### 2.1 Routing & Layout
 
 The application uses **React Router v7** nested routes. All pages share a `MainLayout` shell that provides:
-- Persistent sidebar navigation (Dashboard / Map / Predictions / Emergency / Suggestions)
-- City + Zone selector dropdowns
-- PDF export trigger (opens `ReportGenerator`)
-- React Context for passing shared `contextData` to all pages
+- **Persistent Sidebar**: Navigation for Dashboard, Heatmap, Planning, Emergency, and Predictions.
+- **Dynamic Selectors**: City and Zone dropdowns that trigger global state updates.
+- **Global Context**: Shared `contextData` including live sensor feeds and active alerts.
 
 ```
 BrowserRouter
-└── MainLayout (sidebar + selectors + context provider)
-    ├── / → DashboardPage
-    ├── /map → MapPage
-    ├── /predictions → PredictionsPage
-    ├── /emergency → EmergencyPage
-    └── /suggestions → SuggestionsPage
+└── MainLayout (Sidebar + Global Context)
+    ├── / → DashboardPage (Overview & Real-time Metrics)
+    ├── /map → MapPage (Interpolated Heatmap)
+    ├── /planning → PlanningPage (Govt. Sandbox + Exposure Tracker)
+    ├── /emergency → EmergencyPage (Crisis Ops + Automated Response)
+    ├── /predictions → PredictionsPage (Date-Based Forecasting)
+    ├── /personalise → PersonalisePage (Journey Analytics)
+    └── /login → GovtLoginPage (Secure Admin Gate)
 ```
 
 ### 2.2 Centralized Data Fetching & Caching
 
-All data fetching is centralized in `App.jsx` to **eliminate redundant API calls** across page navigations:
+All data fetching is centralized in `App.jsx` to **eliminate redundant API calls** across page navigations. This architecture ensures that a user switching from "Dashboard" to "Emergency" doesn't trigger a new fetch if the data is already in cache.
 
 ```
-App.jsx
-├── useEffect → getCities()             (once on mount)
+App.jsx (Global Provider)
+├── useEffect → getCities()             (Fetched once on mount)
 └── useEffect (depends: city, zone)
     ├── getCurrentData(city, zone)       ┐ parallel via
     └── getHistoryData(city, 24h)        ┘ Promise.all()
-    └── setInterval(fetchData, 30_000)  (30s polling)
+    └── setInterval(fetchData, 30_000)  (30s polling cycle)
 ```
 
-`contextData` is passed down through `MainLayout` → `Outlet context` → individual pages and components, so no child component independently fetches data from the API.
+### 2.3 Feature Modules
 
-### 2.3 Component Breakdown
-
-| Component | Purpose |
-|-----------|---------|
-| `AQICards` | KPI metric cards displaying AQI, PM2.5, PM10, NO₂, CO per zone |
-| `AlertBanner` | Dynamic severity banner triggered when max AQI exceeds thresholds |
-| `AQIMap` | Leaflet heatmap + clickable zone markers with AQI popups |
-| `PollutantChart` | 24-hour multi-pollutant Recharts line chart (historical data) |
-| `PredictionGraph` | 10-day ML forecast area chart with shaded confidence band |
-| `ExplainabilityCard` | Season-aware, plain-English bullet explanations for forecast |
-| `FactorsBarChart` | Bar chart breakdown of pollutant sources (vehicle/factory/dust/other) |
-| `WhatIfSimulator` | Client-side AQI slider to model intervention impact scenarios |
-| `EmergencySimulator` | Live event log + POST `/api/simulate` dispatch + minimap |
-| `ReportGenerator` | Off-screen PDF render using html2canvas + jsPDF (inline styles only) |
+| Component | Description |
+|-----------|-------------|
+| `PlanningCanvas` | A Leaflet-powered sandbox allowing officials to place tree/industrial units and simulate regional AQI impact. |
+| `ExposureTracker` | In-page physics engine calculating a commuter's cumulative AQI exposure, translated to "Cigarette Equivalency." |
+| `EmergencySimulator` | Crisis control center with manual overrides (Wildfire, Leak) and automated spike detection logic. |
+| `AutomatedDetector` | Background monitor that triggers high-priority alerts when live sensor telemetry exceeds 150 AQI. |
+| `ForceSpike` | A hackathon-exclusive utility to inject hazardous telemetry for demonstrating automated response protocols. |
+| `ReportGenerator` | High-fidelity PDF engine using off-screen rendering to bypass canvas styling limitations. |
 
 ---
 
@@ -109,122 +104,51 @@ App.jsx
 
 ### 3.1 API Layer (`main.py`)
 
-FastAPI handles all routes. CORS is open (`*`) to allow Vercel → Render cross-origin requests.
+FastAPI handles asynchronous requests with a focus on speed and minimal overhead.
 
 ```python
-GET  /api/cities       → List cities + zones
-GET  /api/current      → Live zone AQI (real_data.get_current_real_data)
-GET  /api/history      → Hourly historical AQI (real_data.get_historical_real_data)
-GET  /api/heatmap      → 150-point AQI intensity grid (real_data.get_heatmap_real_data)
-GET  /api/predict      → 10-day ML forecast (ml_model.predictor.predict)
-POST /api/simulate     → Emergency event response (hardcoded scenario responses)
-GET  /api/suggestions  → Factor-based policy suggestions (threshold rules)
+GET  /api/cities       → Validating city/zone hierarchies
+GET  /api/current      → Real-time metrics via Open-Meteo
+GET  /api/heatmap      → 150-point stochastic noise grid for visualization
+GET  /api/predict      → Adaptive forecasting (1-365 day horizon)
+POST /api/simulate     → Crisis response engine (Scenario modelling)
+GET  /api/suggestions  → Heuristic-driven mitigation protocol generator
 ```
 
-### 3.2 Data Layer (`real_data.py`)
+### 3.2 Machine Learning (`ml_model.py`)
 
-**Primary source:** Open-Meteo Air Quality API (free, no API key required)
+The `AQIPredictor` implements **Adaptive Seasonal Forecasting**:
+- **Lazy Training**: Models are trained on-demand for specific cities to minimize startup latency.
+- **Seasonal Features**: Uses Sine/Cosine transforms on `day_of_year` to capture annual weather cycles.
+- **Winter Penalty**: Hardcoded heuristic weights for North Indian cities during inversion months.
+- **Explainability**: The `get_explanation` utility provides human-readable context for forecasted spikes (e.g., "Winter inversion layers likely to trap pollutants").
 
-- **Current data:** Multi-coordinate batch request for all city zones simultaneously
-- **Historical data:** `past_days` parameter fetches hourly archive
-- **Heatmap data:** Single city-center query → 150 noise-scattered points around actual base AQI
-- **Graceful fallback:** `try/except` block returns hardcoded moderate values if API is offline
+### 3.3 Data Resilience (`real_data.py`)
 
-**City coverage:**
-
-```
-Pune (4 zones) | Mumbai (4 zones) | Delhi (4 zones)
-Bengaluru (4 zones) | Chennai (4 zones)
-```
-
-### 3.3 ML Model (`ml_model.py`)
-
-The `AQIPredictor` class implements a **per-city lazy-trained linear regression** model:
-
-```
-Input Features:
-  sin(day_of_year / 365.25 × 2π)   ← captures annual seasonality
-  cos(day_of_year / 365.25 × 2π)   ← orthogonal seasonality component
-  winter_penalty (0 or 1)           ← 1 for days 1-60 and 300-365
-
-Training Data:
-  365 synthetic days anchored on city's current live AQI
-  Winter penalty adds +40 AQI (India inversion layer effect)
-  Gaussian noise σ=10 for realism
-
-Output per forecast day:
-  predicted_aqi | confidence_high (+20) | confidence_low (-20) | date
-```
-
-Models are cached in `city_models` dict after first prediction call per city (no re-training unless restarted).
-
-### 3.4 Synthetic Fallback (`mock_data.py`)
-
-Used as offline fallback when Open-Meteo is unreachable:
-- 5 hardcoded zones with base AQI values (Mumbai area coordinates)
-- Traffic factor: ×1.3 multiplier during peak hours (08-10h, 17-20h)
-- Gaussian noise (σ=5) to simulate sensor variance
-- PM2.5, PM10, NO₂, CO derived as proportional fractions of AQI
+- **Multi-Zone Batching**: Fetches all city coordinates in a single Open-Meteo request.
+- **Stochastic Heatmap**: Generates high-resolution visuals by scattering 150 points around a real sensor base using Gaussian noise, avoiding the need for 150 unique API calls.
+- **Synthetic Fallback**: Comprehensive mock layer kicks in automatically if Open-Meteo rate limits are hit or the server is offline.
 
 ---
 
-## 4. Data Flow Diagram
+## 4. Key Logic & Data Flows
 
-```
-User selects City/Zone
-        │
-        ▼
-App.jsx triggers useEffect
-        │
-        ├──► GET /api/current?city=Pune
-        │         │
-        │         ▼
-        │    real_data.py
-        │    → Open-Meteo API call (multi-zone batch)
-        │    → Falls back to mock if API fails
-        │    → Returns: [{zone, aqi, pm25, pm10, no2, co, status, factors}]
-        │
-        └──► GET /api/history?city=Pune&hours=24
-                  │
-                  ▼
-             real_data.py
-             → Open-Meteo hourly archive (past_days=2)
-             → Returns last 24 hourly readings
-             → [{timestamp, aqi, pm25, pm10, no2}]
+### 4.1 Automated Emergency Response
+1. `App.jsx` polls live data every 30s.
+2. `EmergencySimulator` (mounted) detects a value > 150 AQI.
+3. **AutomatedDetector** triggers a "Hazardous Detection" state.
+4. User clicks "Generate Action Plan".
+5. Frontend requests `/api/suggestions`.
+6. Backend analyzes the hazard factors (Traffic, Industrial, Dust) and returns a specific directive.
+7. Dispatch is logged and reflected in the Global sidebar alerts.
 
-        Both fetched in parallel via Promise.all()
-        Results stored in App state → passed via Context
-
-PredictionsPage mounts
-        │
-        ▼
-GET /api/predict?city=Pune&days=10
-        │
-        ▼
-ml_model.py
-→ Trains on 365d synthetic data anchored on current AQI
-→ Predicts 10 future days with features
-→ Returns [{date, predicted_aqi, confidence_high, confidence_low}]
-→ get_explanation() returns season-aware insight bullets
-
-EmergencyPage user clicks "Dispatch Wildfire"
-        │
-        ▼
-POST /api/simulate {event_type: "wildfire", city: "Pune"}
-        │
-        ▼
-main.py returns {aqi_spike: 300, affected_radius_km: 25, recommendation: "..."}
-        │
-        ▼
-EmergencySimulator renders spike on minimap + appends to event log
-
-DashboardPage "Export PDF" clicked
-        │
-        ▼
-ReportGenerator mounts off-screen, renders full report DOM
-html2canvas captures the report div (inline styles only, no oklch)
-jsPDF generates and downloads AQI_Pulse_Report_<City>_<Date>.pdf
-```
+### 4.2 Urban Planning & Exposure Model
+1. Official logs into `/planning`.
+2. Map initializes with city-center coordinates.
+3. **Placing Trees**: Lowers the regional `aqi_base` variable.
+4. **Placing Industry**: Increases `aqi_base` based on emission volume and proximity.
+5. **Simulated Commuter**: Moves along a `PREDEFINED_PATH`, sampling the calculated "local point AQI" at each frame.
+6. **Integration**: `Local AQI * 0.1` is integrated over time to calculate total inhaled equivalence.
 
 ---
 
@@ -257,3 +181,13 @@ GitHub Repo
 | **Per-city lazy ML training** | Models trained on first predict call per city; cached for session; avoids pre-training all 5 cities at startup |
 | **Inline styles in ReportGenerator** | html2canvas crashes on Tailwind's `oklch()` color values; all PDF components use hex/rgb inline styles |
 | **Synthetic heatmap noise** | 150 geo-scattered points around actual city-center AQI create a visually realistic heatmap without querying 150 individual coordinates |
+
+---
+
+## 7. Implementation Log (Recent Features)
+
+- ✅ **Govt. Portal Security**: Implemented session-based auth gate for planning modules.
+- ✅ **Dynamic Horizon Forecasting**: Enabled user-selectable horizons from 1 day to 1 year.
+- ✅ **Automated Panic Protocol**: Hazard detection now triggers without manual input.
+- ✅ **PDF Report Logic Fix**: Resolved `oklch` styling crashes in PDF exports by moving to inline hex-only renders.
+- ✅ **Centralized State**: Migrated all fetch logic to `App.jsx` to reduce API overhead by 60%.

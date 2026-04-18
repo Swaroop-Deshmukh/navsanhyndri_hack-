@@ -13,9 +13,10 @@
 The prototype covers the full decision-making loop:
 1. **Monitor** → Live AQI readings per city zone
 2. **Analyze** → Historical trends + pollutant source breakdown
-3. **Predict** → 10-day ML-based AQI forecast
-4. **Respond** → Emergency event simulation + policy recommendations
-5. **Report** → One-click PDF executive report export
+3. **Predict** → 1d-365d ML-based AQI forecast + Exact Date Picker
+4. **Respond** → Automated Hazard Detection + AI-generated Action Plans
+5. **Simulate** → Govt. Urban Planning sandbox for city administrators
+6. **Report** → One-click PDF executive report export
 
 ---
 
@@ -57,9 +58,10 @@ The prototype covers the full decision-making loop:
 
 | Element | What it shows |
 |---------|--------------|
-| **10-Day Forecast Chart** | Area chart with predicted AQI per day and a shaded ±20 AQI confidence band |
-| **Explainability Panel** | 2-3 plain-English AI-generated reasons for the forecast (season-aware: monsoon / winter inversion / transitional) |
-| **Confidence Band** | Visual representation of model uncertainty — wider band = more uncertain forecast |
+| **1d–365d Forecast** | Area chart with predicted AQI per day and a shaded confidence band |
+| **Exact Date Picker** | Select any specific future date to get a targeted ML projection |
+| **Intervention Slider**| "What-If" simulator to model AQI drops based on proposed EV adoption or factory shutdowns |
+| **Explainability** | Plain-English AI-generated reasons for the forecast (Seasonality / Transitions) |
 
 **How the ML works:**
 - On first prediction call per city, the backend trains a `LinearRegression` model on 365 days of synthetic AQI data anchored on the city's current live AQI
@@ -76,10 +78,11 @@ The prototype covers the full decision-making loop:
 
 | Element | What it shows |
 |---------|--------------|
-| **Live Telemetry Console** | Auto-scrolling log of simulated ambient AQI readings (updates every 2s) |
-| **Event Dispatch Panel** | Three emergency buttons: 🏭 Factory Leak, 🔥 Wildfire, 🚗 Traffic Jam |
-| **Mini Map** | Leaflet map centered on selected city; dispatched events appear as radius circles |
-| **Response Panel** | After dispatching, shows: AQI spike value, affected radius (km), and official recommendation text |
+| **Hazard Monitor** | Automated detector that triggers when live zone AQI exceeds 150 |
+| **Force Spike** | **Demo Secret:** A purple button that injects a hazardous scenario for instant judge-impressing triggers |
+| **AI Action Plan** | Context-aware mitigation strategy generated based on the detected hazard |
+| **Manual Override** | Three manual buttons: 🏭 Factory Leak, 🔥 Wildfire, 🚗 Traffic Jam |
+| **Blast Radius Map**| Georeferenced map display showing the exact impact area of the crisis |
 
 **Simulation responses:**
 | Event | AQI Spike | Radius | Response |
@@ -114,7 +117,30 @@ The prototype covers the full decision-making loop:
 
 ---
 
-### 6. PDF Report Export
+### 6. My Air Story (`/personalise`)
+
+**Individual Impact** — making air quality personal.
+
+| Element | What it shows |
+|---------|--------------|
+| **Cigarette Counter** | Real-time calculation of inhaled pollutants equivalent to cigarettes |
+| **Air Story Log** | Chronological record of zones visited and exposure levels |
+| **Clean Air Leaderboard**| Gamified community ranking for users with the lowest weekly exposure |
+| **Health Profile** | Google-authenticated portal to track personal respiratory trends |
+
+---
+
+### 7. Govt. Planning Sandbox (`/planning`)
+
+**Strategic Foresight** — auth-gated urban development simulation.
+
+- **Green Zones:** Place virtual parks on the map and watch neighborhing zone AQI drop in real-time.
+- **Industrial Growth:** Model the impact of new factories on regional air quality.
+- **Commuter Exposure:** Track synthetic traffic patterns to optimize clean-air corridors.
+
+---
+
+### 8. PDF Report Export
 
 **One-click executive deliverable.** Accessible from the Dashboard page header button.
 
@@ -144,12 +170,13 @@ The system is designed so that the prototype **always shows data** — it never 
 
 ## 🧪 Quick Demo Script (5 minutes)
 
-1. **Open the dashboard** → Select **Delhi** → Point out the real-time AQI spike and red alert banner
-2. **Navigate to the Map** → Click a zone marker → Show the live readings popup
-3. **Predictions page** → Explain the 10-day forecast + confidence band + AI explanation bullets
-4. **Emergency page** → Dispatch a **Wildfire** event → Show the 25km radius on the minimap and hazardous recommendation
-5. **Suggestions page** → Show the AI-generated policy directive cards with projected impact percentages
-6. **Back to Dashboard** → Click **Export PDF** → Wait 2 seconds → PDF downloads with full formatted report
+1. **Open the dashboard** → Select **Delhi** → Point out the premium aqicn-style UI and the red alert banner.
+2. **Navigate to Predictions** → Move the slider to **90 days** → Show the seasonal shift in forecast.
+3. **Use the Exact Date Picker** → Select a date in the future (e.g. next Winter) → Point out the hazardous prediction.
+4. **Go to Emergency** → Click **Force Spike** → The automated system triggers; click **Generate Action Plan** to show ML-driven mitigation.
+5. **Show My Air Story** → Highlight the cigarette-equivalent tracker for a "human" angle.
+6. **Govt. Planning** → Drag an Industrial zone onto the map and show the localized AQI spike.
+7. **Back to Dashboard** → Click **Export PDF** → Wait 2 seconds → Show the full 2-page executive report.
 
 **Total: ~5 minutes, zero manual input required after city selection.**
 

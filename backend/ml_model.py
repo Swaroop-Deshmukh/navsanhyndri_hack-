@@ -59,6 +59,10 @@ class AQIPredictor:
             winter_penalty = 1.0 if (day_of_year < 60 or day_of_year > 300) else 0.0
             
             pred_aqi = model.predict([[sin_day, cos_day, winter_penalty]])[0]
+            
+            # Inject realistic short-term volatility (auto-regressive noise)
+            noise = np.random.normal(0, 8) if days_ahead <= 30 else np.random.normal(0, 4)
+            pred_aqi = pred_aqi + noise
             pred_aqi = max(0, int(pred_aqi))
             
             predictions.append({

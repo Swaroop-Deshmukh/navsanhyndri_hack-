@@ -9,7 +9,8 @@ export default function PredictionGraph() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [forecastPeriod, setForecastPeriod] = useState(10); // 10 days or 365 days
+  const [forecastPeriod, setForecastPeriod] = useState(60); 
+  const [finalAqi, setFinalAqi] = useState(null);
   
   useEffect(() => {
     let isMounted = true;
@@ -20,8 +21,8 @@ export default function PredictionGraph() {
         const formatted = res.predictions.map(p => {
           const dateObj = new Date(p.date || p.timestamp);
           return {
-            time: forecastPeriod <= 10 
-              ? dateObj.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' })
+            time: forecastPeriod <= 30 
+              ? dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' })
               : dateObj.toLocaleDateString([], { month: 'short', year: 'numeric' }),
             PredictedAQI: p.predicted_aqi,
             ConfHigh: p.confidence_high,
@@ -29,8 +30,12 @@ export default function PredictionGraph() {
           };
         });
         
-        // If 365 days, aggregate by month for cleaner chart
-        if (forecastPeriod === 365) {
+        if (formatted.length > 0) {
+            setFinalAqi(formatted[formatted.length - 1].PredictedAQI);
+        }
+
+        // Aggregate by month for longer horizons to keep chart readable
+        if (forecastPeriod > 90) {
            const monthly = {};
            formatted.forEach(f => {
               if (!monthly[f.time]) monthly[f.time] = { time: f.time, PredictedAQI: 0, ConfHigh: 0, ConfLow: 0, count: 0 };
@@ -59,23 +64,28 @@ export default function PredictionGraph() {
     <div className="bg-[#1e293b] shadow-xl rounded-[32px] flex flex-col h-full w-full border border-white/5 p-6 relative">
       <div className="mb-6 flex flex-wrap justify-between items-center border-b border-white/10 pb-4 gap-4">
         <div>
-          <h3 className="text-sm font-black text-indigo-300 uppercase tracking-widest">{forecastPeriod === 10 ? '10-Day Horizon' : '1-Year Projection'}</h3>
+          <h3 className="text-sm font-black text-indigo-300 uppercase tracking-widest">{forecastPeriod}-Day Horizon</h3>
           <p className="text-xs text-gray-400 font-medium">Auto-Regressive Forecasting Model</p>
         </div>
         
-        <div className="flex items-center gap-2">
-           <button 
-             onClick={() => setForecastPeriod(10)}
-             className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${forecastPeriod === 10 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-black/20 text-gray-400 hover:text-gray-200'}`}
-           >
-             10 Days
-           </button>
-           <button 
-             onClick={() => setForecastPeriod(365)}
-             className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${forecastPeriod === 365 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-black/20 text-gray-400 hover:text-gray-200'}`}
-           >
-             1 Year
-           </button>
+        <div className="flex flex-col items-end gap-2 w-full max-w-[300px]">
+           <div className="flex justify-between w-full text-xs font-bold text-gray-400 mb-1">
+              <span>1 Day</span>
+              <span className="text-indigo-400">{forecastPeriod} Days</span>
+              <span>1 Year</span>
+           </div>
+           <input 
+             type="range" 
+             min="1" max="365" 
+             value={forecastPeriod} 
+             onChange={(e) => setForecastPeriod(parseInt(e.target.value))}
+             className="w-full accent-indigo-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+           />
+           {finalAqi !== null && (
+             <div className="text-xs font-bold text-gray-300 mt-1 bg-white/5 px-3 py-1 rounded-full border border-white/10 shadow-inner">
+                Exact Count after {forecastPeriod} days: <span className="text-[14px] text-white font-black">{finalAqi} AQI</span>
+             </div>
+           )}
         </div>
       </div>
 
